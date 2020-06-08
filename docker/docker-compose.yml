@@ -8,6 +8,8 @@ services:
       back_net:
         aliases:
           - comment_db
+    env_file:
+      - .env
 
   ui:
     image: ${USER_NAME}/ui:${UI_VERSION}
@@ -15,12 +17,32 @@ services:
       - 9292
     networks:
       - front_net
+    depends_on:
+      - post
+    logging:
+      driver: "fluentd"
+      options:
+       fluentd-address: localhost:24224
+       tag: service.ui
+    env_file:
+      - .env
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
     networks:
       - front_net
       - back_net
+    env_file:
+      - .env
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
 
   comment:
@@ -28,6 +50,10 @@ services:
     networks:
       - front_net
       - back_net
+    env_file:
+      - .env
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
 volumes:
   post_db:
